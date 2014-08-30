@@ -13,6 +13,7 @@
         <activity
             android:name=".UsbAccessoryActivity"
             android:label="UsbAccessoryActivity"
+            android:launchMode="singleTask"
             android:taskAffinity="">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />

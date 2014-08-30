@@ -17,30 +17,14 @@ public class UsbAccessoryActivity extends Activity {
 
     private static final String TAG = "UsbAccessoryActivity";
 
-    @Override
-    protected void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-
-        LocalBroadcastManager.getInstance(this).registerReceiver(mMessageReceiver,
-                new IntentFilter(UsbAccessoryService.ACTION_RUNNING));
-
-        UsbAccessory accessory = getIntent().getParcelableExtra(UsbManager.EXTRA_ACCESSORY);
-        if (accessory != null) {
-            Log.d(TAG, "This is the accessory onCreate UsbAccessoryActivity: " + accessory.toString());
-            Intent usbAccessoryServiceIntent = new Intent(this, UsbAccessoryService.class);
-            usbAccessoryServiceIntent.putExtra(UsbManager.EXTRA_ACCESSORY, accessory);
-            startService(usbAccessoryServiceIntent);
-        }
-
-        setContentView(R.layout.activity_usb_accessory);
-    }
+    private Thread mUsbAccessoryThread;
 
     private BroadcastReceiver mMessageReceiver = new BroadcastReceiver() {
         @Override
         public void onReceive(Context context, Intent intent) {
             String action = intent.getAction();
+            Log.d(TAG, "mMessageReceiver onReceive: " + action);
             if (UsbAccessoryService.ACTION_RUNNING.equals(action)) {
-                Log.d(TAG, "ACTION_RUNNING got to DashboardActivity");
                 Intent dashboardActivityIntent = new Intent(UsbAccessoryActivity.this, DashboardActivity.class);
                 startActivity(dashboardActivityIntent);
             }
@@ -48,7 +32,61 @@ public class UsbAccessoryActivity extends Activity {
     };
 
     @Override
+    protected void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+
+        Log.d(TAG, "Register mMessageReceiver");
+        LocalBroadcastManager.getInstance(this).registerReceiver(mMessageReceiver,
+                new IntentFilter(UsbAccessoryService.ACTION_RUNNING));
+
+        UsbAccessory accessory = getIntent().getParcelableExtra(UsbManager.EXTRA_ACCESSORY);
+        if (accessory != null) {
+            startUsbAccessoryService(accessory);
+        }
+
+        setContentView(R.layout.activity_usb_accessory);
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+
+        mUsbAccessoryThread = new Thread(new Runnable() {
+            @Override
+            public void run() {
+                while (true) {
+                    try {
+                        Thread.sleep(2000);
+                    } catch (InterruptedException e) {
+                        break;
+                    }
+
+                    UsbManager usbManager = (UsbManager) getSystemService(Context.USB_SERVICE);
+
+                    UsbAccessory[] accessories = usbManager.getAccessoryList();
+                    UsbAccessory accessory = (accessories == null ? null : accessories[0]);
+                    if (accessory != null) {
+                        startUsbAccessoryService(accessory);
+                        break;
+                    }
+                }
+            }
+        });
+
+        mUsbAccessoryThread.start();
+    }
+
+    @Override
+    protected void onPause() {
+        if (mUsbAccessoryThread != null) {
+            mUsbAccessoryThread.interrupt();
+        }
+        super.onPause();
+    }
+
+    @Override
     protected void onDestroy() {
+        Log.d(TAG, "Unregister mMessageReceiver");
         unregisterReceiver(mMessageReceiver);
         super.onDestroy();
     }
@@ -69,5 +107,11 @@ public class UsbAccessoryActivity extends Activity {
             return true;
         }
         return super.onOptionsItemSelected(item);
+    }
+
+    protected void startUsbAccessoryService(UsbAccessory accessory) {
+        Intent usbAccessoryServiceIntent = new Intent(UsbAccessoryActivity.this, UsbAccessoryService.class);
+        usbAccessoryServiceIntent.putExtra(UsbManager.EXTRA_ACCESSORY, accessory);
+        startService(usbAccessoryServiceIntent);
     }
 }

@@ -60,12 +60,12 @@ public class UsbAccessoryService extends Service implements Runnable {
 
         if (!mRunning) {
 
+            mRunning = true;
+
             mUsbManager = (UsbManager) getSystemService(Context.USB_SERVICE);
             mAccessory = intent.getParcelableExtra(UsbManager.EXTRA_ACCESSORY);
 
             openAccessory(mAccessory);
-
-            mRunning = true;
 
             LocalBroadcastManager.getInstance(this).sendBroadcast(new Intent(ACTION_RUNNING));
         }
@@ -78,12 +78,8 @@ public class UsbAccessoryService extends Service implements Runnable {
     @Override
     public void onDestroy() {
         closeAccessory();
-
         mRunning = false;
-
         LocalBroadcastManager.getInstance(this).sendBroadcast(new Intent(ACTION_STOPPED));
-
-        Log.d(TAG, "onDestroy() called on UsbAccessoryService");
     }
 
     @Override

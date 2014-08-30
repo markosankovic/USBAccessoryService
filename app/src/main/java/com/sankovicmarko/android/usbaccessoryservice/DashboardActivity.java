@@ -5,16 +5,25 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
-import android.hardware.usb.UsbAccessory;
 import android.os.Bundle;
 import android.support.v4.content.LocalBroadcastManager;
-import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 
 public class DashboardActivity extends Activity {
 
     private static final String TAG = "DashboardActivity";
+
+    private BroadcastReceiver mMessageReceiver = new BroadcastReceiver() {
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            String action = intent.getAction();
+            if (UsbAccessoryService.ACTION_STOPPED.equals(action)) {
+                Intent usbAccessoryActivity = new Intent(DashboardActivity.this, UsbAccessoryActivity.class);
+                startActivity(usbAccessoryActivity);
+            }
+        }
+    };
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -25,18 +34,6 @@ public class DashboardActivity extends Activity {
 
         setContentView(R.layout.activity_dashboard);
     }
-
-    private BroadcastReceiver mMessageReceiver = new BroadcastReceiver() {
-        @Override
-        public void onReceive(Context context, Intent intent) {
-            String action = intent.getAction();
-            if (UsbAccessoryService.ACTION_STOPPED.equals(action)) {
-                Log.d(TAG, "ACTION_STOPPED get back to usbAccessoryActivity");
-                Intent usbAccessoryActivity = new Intent(DashboardActivity.this, UsbAccessoryActivity.class);
-                startActivity(usbAccessoryActivity);
-            }
-        }
-    };
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
