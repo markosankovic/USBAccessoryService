@@ -1,12 +1,11 @@
 package com.sankovicmarko.android.usbaccessoryservice;
 
 import android.app.Service;
-import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
-import android.content.IntentFilter;
 import android.hardware.usb.UsbAccessory;
 import android.hardware.usb.UsbManager;
+import android.os.Binder;
 import android.os.Handler;
 import android.os.IBinder;
 import android.os.Message;
@@ -19,7 +18,7 @@ import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 
-public class UsbAccessoryService extends Service implements Runnable {
+public class UsbAccessoryService extends Service implements Runnable, OBC {
 
     private static final String TAG = "UsbAccessoryService";
 
@@ -34,6 +33,21 @@ public class UsbAccessoryService extends Service implements Runnable {
     ParcelFileDescriptor mFileDescriptor;
     FileInputStream mInputStream;
     FileOutputStream mOutputStream;
+
+    // Binder given to clients
+    private final IBinder mBinder = new LocalBinder();
+
+    /**
+     * Class used for the client Binder.  Because we know this service always
+     * runs in the same process as its clients, we don't need to deal with IPC.
+     */
+    public class LocalBinder extends Binder {
+
+        UsbAccessoryService getService() {
+            // Return this instance of UsbAccessoryService so clients can call public methods
+            return UsbAccessoryService.this;
+        }
+    }
 
     private static final int MESSAGE_DUMMY = 64;
 
@@ -79,13 +93,12 @@ public class UsbAccessoryService extends Service implements Runnable {
     public void onDestroy() {
         closeAccessory();
         mRunning = false;
-        LocalBroadcastManager.getInstance(this).sendBroadcast(new Intent(ACTION_STOPPED));
+
     }
 
     @Override
     public IBinder onBind(Intent intent) {
-        // TODO: Return the communication channel to the service.
-        throw new UnsupportedOperationException("Not yet implemented");
+        return mBinder;
     }
 
     private void openAccessory(UsbAccessory accessory) {
@@ -104,7 +117,7 @@ public class UsbAccessoryService extends Service implements Runnable {
     }
 
     private void closeAccessory() {
-        Log.d(TAG, "closeAccessory");
+        Log.d(TAG, "accessory close");
         try {
             if (mFileDescriptor != null) {
                 mFileDescriptor.close();
@@ -140,8 +153,11 @@ public class UsbAccessoryService extends Service implements Runnable {
             }
         }
 
+        // Must be called before stopSelf, so that the running activity which is bound this service,
+        // releases the service and allow it to stop.
+        LocalBroadcastManager.getInstance(this).sendBroadcast(new Intent(ACTION_STOPPED));
+
         stopSelf();
-        Log.d(TAG, "end UsbAccessoryService run() with IOException");
     }
 
     Handler mHandler = new Handler() {
@@ -157,5 +173,20 @@ public class UsbAccessoryService extends Service implements Runnable {
 
     protected void handleDummyMessage(DummyMsg msg) {
         Log.d(TAG, msg.getMessage());
+    }
+
+    private void writeBytes(byte[] bytes) {
+        if (mOutputStream != null) {
+            try {
+                mOutputStream.write(bytes);
+            } catch (IOException e) {
+                Log.e(TAG, "write failed", e);
+            }
+        }
+    }
+
+    @Override
+    public void sendDummyData() {
+        writeBytes("A0000".getBytes());
     }
 }

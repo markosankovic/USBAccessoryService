@@ -9,7 +9,6 @@ import android.hardware.usb.UsbAccessory;
 import android.hardware.usb.UsbManager;
 import android.os.Bundle;
 import android.support.v4.content.LocalBroadcastManager;
-import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 
@@ -23,7 +22,6 @@ public class UsbAccessoryActivity extends Activity {
         @Override
         public void onReceive(Context context, Intent intent) {
             String action = intent.getAction();
-            Log.d(TAG, "mMessageReceiver onReceive: " + action);
             if (UsbAccessoryService.ACTION_RUNNING.equals(action)) {
                 Intent dashboardActivityIntent = new Intent(UsbAccessoryActivity.this, DashboardActivity.class);
                 startActivity(dashboardActivityIntent);
@@ -35,7 +33,6 @@ public class UsbAccessoryActivity extends Activity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        Log.d(TAG, "Register mMessageReceiver");
         LocalBroadcastManager.getInstance(this).registerReceiver(mMessageReceiver,
                 new IntentFilter(UsbAccessoryService.ACTION_RUNNING));
 
@@ -86,7 +83,6 @@ public class UsbAccessoryActivity extends Activity {
 
     @Override
     protected void onDestroy() {
-        Log.d(TAG, "Unregister mMessageReceiver");
         unregisterReceiver(mMessageReceiver);
         super.onDestroy();
     }

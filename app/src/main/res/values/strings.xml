@@ -7,5 +7,6 @@
     <string name="title_activity_usb_accessory">UsbAccessoryActivity</string>
     <string name="dashboard_activity_hello_world">DashboardActivity</string>
     <string name="title_activity_dashboard">DashboardActivity</string>
+    <string name="button_send_dummy_data">Send Dummy Data</string>
 
 </resources>

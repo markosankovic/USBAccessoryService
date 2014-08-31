@@ -1,37 +1,17 @@
 package com.sankovicmarko.android.usbaccessoryservice;
 
-import android.app.Activity;
-import android.content.BroadcastReceiver;
-import android.content.Context;
-import android.content.Intent;
-import android.content.IntentFilter;
 import android.os.Bundle;
-import android.support.v4.content.LocalBroadcastManager;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.View;
 
-public class DashboardActivity extends Activity {
+public class DashboardActivity extends UsbAccessoryBaseActivity {
 
     private static final String TAG = "DashboardActivity";
-
-    private BroadcastReceiver mMessageReceiver = new BroadcastReceiver() {
-        @Override
-        public void onReceive(Context context, Intent intent) {
-            String action = intent.getAction();
-            if (UsbAccessoryService.ACTION_STOPPED.equals(action)) {
-                Intent usbAccessoryActivity = new Intent(DashboardActivity.this, UsbAccessoryActivity.class);
-                startActivity(usbAccessoryActivity);
-            }
-        }
-    };
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-
-        LocalBroadcastManager.getInstance(this).registerReceiver(mMessageReceiver,
-                new IntentFilter(UsbAccessoryService.ACTION_STOPPED));
-
         setContentView(R.layout.activity_dashboard);
     }
 
@@ -52,5 +32,9 @@ public class DashboardActivity extends Activity {
             return true;
         }
         return super.onOptionsItemSelected(item);
+    }
+
+    public void sendDummyData(View view) {
+        getOBC().sendDummyData();
     }
 }
