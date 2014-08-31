@@ -1,9 +1,16 @@
 package com.sankovicmarko.android.usbaccessoryservice;
 
+import android.content.BroadcastReceiver;
+import android.content.Context;
+import android.content.Intent;
+import android.content.IntentFilter;
 import android.os.Bundle;
+import android.support.v4.content.LocalBroadcastManager;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.widget.TextView;
 
 public class DashboardActivity extends UsbAccessoryBaseActivity {
 
@@ -14,6 +21,34 @@ public class DashboardActivity extends UsbAccessoryBaseActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_dashboard);
     }
+
+    @Override
+    protected void onStart() {
+        super.onStart();
+        LocalBroadcastManager.getInstance(this).registerReceiver(
+                mMessageReceiver, new IntentFilter(OBCBroadcastMessenger.ACTION_SPEED));
+    }
+
+    @Override
+    protected void onStop() {
+        super.onStop();
+        try {
+            unregisterReceiver(mMessageReceiver);
+        } catch (IllegalArgumentException e) {
+            Log.e(TAG, e.getMessage());
+        }
+    }
+
+    private BroadcastReceiver mMessageReceiver = new BroadcastReceiver() {
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            String action = intent.getAction();
+            if (OBCBroadcastMessenger.ACTION_SPEED.equals(action)) {
+                TextView speedTextView = (TextView) findViewById(R.id.speedTextView);
+                speedTextView.setText("Speed: " + intent.getStringExtra("speed"));
+            }
+        }
+    };
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {

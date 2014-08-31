@@ -1,7 +1,9 @@
 package com.sankovicmarko.android.usbaccessoryservice;
 
 /**
- * On-Board Controller Operations.
+ * OBC
+ * <p/>
+ * Declares all on-board controller operations.
  */
 public interface OBC {
 

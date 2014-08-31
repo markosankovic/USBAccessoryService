@@ -25,7 +25,7 @@ public class UsbAccessoryBaseActivity extends Activity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         // Listen for USB Accessory Service stop
-        LocalBroadcastManager.getInstance(this).registerReceiver(mMessageReceiver,
+        LocalBroadcastManager.getInstance(this).registerReceiver(mUsbAccessoryBaseMessageReceiver,
                 new IntentFilter(UsbAccessoryService.ACTION_STOPPED));
     }
 
@@ -33,10 +33,10 @@ public class UsbAccessoryBaseActivity extends Activity {
     protected void onDestroy() {
         super.onDestroy();
         try {
-            unregisterReceiver(mMessageReceiver);
+            unregisterReceiver(mUsbAccessoryBaseMessageReceiver);
         } catch (IllegalArgumentException e) {
-            // FIXME Find cases in which mMessageReceiver is not registered in onCreate
-            // Ignore if mMessageReceiver is already unregistered or not registered at all
+            // FIXME Find cases in which mUsbAccessoryBaseMessageReceiver is not registered in onCreate
+            // Ignore if mUsbAccessoryBaseMessageReceiver is already unregistered or not registered at all
             Log.e(TAG, e.getMessage());
         }
     }
@@ -65,7 +65,7 @@ public class UsbAccessoryBaseActivity extends Activity {
     // When USB Accessory Service is stopped (currently only if read thread has ended,
     // in most cases when USB accessory is detached) return to the USB Accessory Activity as
     // there is no reason for a user to use this application if there is no connection to the OBC.
-    private BroadcastReceiver mMessageReceiver = new BroadcastReceiver() {
+    private BroadcastReceiver mUsbAccessoryBaseMessageReceiver = new BroadcastReceiver() {
         @Override
         public void onReceive(Context context, Intent intent) {
             String action = intent.getAction();

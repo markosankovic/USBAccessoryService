@@ -17,6 +17,7 @@ import java.io.FileDescriptor;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.util.Random;
 
 public class UsbAccessoryService extends Service implements Runnable, OBC {
 
@@ -24,6 +25,8 @@ public class UsbAccessoryService extends Service implements Runnable, OBC {
 
     public static final String ACTION_RUNNING = "com.sankovicmarko.android.usbaccessoryservice.UsbAccessoryService.action.running";
     public static final String ACTION_STOPPED = "com.sankovicmarko.android.usbaccessoryservice.UsbAccessoryService.action.stopped";
+
+    private OBCBroadcastMessenger obcBroadcastMessenger;
 
     private boolean mRunning;
 
@@ -66,6 +69,7 @@ public class UsbAccessoryService extends Service implements Runnable, OBC {
     @Override
     public void onCreate() {
         super.onCreate();
+        obcBroadcastMessenger = new OBCBroadcastMessenger(this);
         mRunning = false;
     }
 
@@ -92,8 +96,8 @@ public class UsbAccessoryService extends Service implements Runnable, OBC {
     @Override
     public void onDestroy() {
         closeAccessory();
+        obcBroadcastMessenger = null;
         mRunning = false;
-
     }
 
     @Override
@@ -143,7 +147,7 @@ public class UsbAccessoryService extends Service implements Runnable, OBC {
             }
 
             Message m = Message.obtain(mHandler, MESSAGE_DUMMY);
-            m.obj = new DummyMsg("Read: " + ret + "bytes");
+            m.obj = new DummyMsg("Read: " + ret + " bytes");
             mHandler.sendMessage(m);
 
             try {
@@ -167,6 +171,7 @@ public class UsbAccessoryService extends Service implements Runnable, OBC {
                 case MESSAGE_DUMMY:
                     DummyMsg o = (DummyMsg) msg.obj;
                     handleDummyMessage(o);
+                    obcBroadcastMessenger.sendSpeed(randInt(0, 40));
             }
         }
     };
@@ -188,5 +193,28 @@ public class UsbAccessoryService extends Service implements Runnable, OBC {
     @Override
     public void sendDummyData() {
         writeBytes("A0000".getBytes());
+    }
+
+    /**
+     * Returns a pseudo-random number between min and max, inclusive.
+     * The difference between min and max can be at most
+     * <code>Integer.MAX_VALUE - 1</code>.
+     *
+     * @param min Minimum value
+     * @param max Maximum value.  Must be greater than min.
+     * @return Integer between min and max, inclusive.
+     * @see java.util.Random#nextInt(int)
+     */
+    public static int randInt(int min, int max) {
+
+        // NOTE: Usually this should be a field rather than a method
+        // variable so that it is not re-seeded every call.
+        Random rand = new Random();
+
+        // nextInt is normally exclusive of the top value,
+        // so add 1 to make it inclusive
+        int randomNum = rand.nextInt((max - min) + 1) + min;
+
+        return randomNum;
     }
 }

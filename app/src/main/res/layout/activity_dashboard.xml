@@ -21,4 +21,9 @@
         android:id="@+id/sendDummyDataButton"
         android:onClick="sendDummyData" />
 
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:id="@+id/speedTextView" />
+
 </LinearLayout>
