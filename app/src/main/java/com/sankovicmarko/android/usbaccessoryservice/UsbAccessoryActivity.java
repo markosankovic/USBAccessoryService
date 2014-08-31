@@ -53,6 +53,12 @@ public class UsbAccessoryActivity extends Activity {
             public void run() {
                 while (true) {
                     try {
+                        /**
+                         * Wait some time before checking if USB accessory is attached.
+                         * This is because when UsbAccessoryService "read thread" sends broadcast that its stopped,
+                         * input and output streams are still not closed on an accessory,
+                         * so the usbManager here lists accessory that is about to be removed.
+                         */
                         Thread.sleep(2000);
                     } catch (InterruptedException e) {
                         break;
