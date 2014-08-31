@@ -4,6 +4,7 @@ import usb.core
 import sys
 import time
 import random
+import json
 
 VID_NEXUS_4_DEBUG = 0x18d1
 PID_NEXUS_4_DEBUG = 0xd002
@@ -114,6 +115,13 @@ def wait_for_command(ldev):
                 sensor = sensor + sensor_variation(toss)
             print ('Sensor: %i' % sensor)
             msg = ('S%0.4i' % sensor)
+            # payload = {
+            #    "method": "speed",
+            #    "params": 123,
+            #    "jsonrpc": "2.0",
+            #    "id": 0
+            # }
+            # msg = json.dumps(payload)
             print('<<< ' + msg),
             try:
                 ret = ldev.write(0x02, msg, 0, 150)
