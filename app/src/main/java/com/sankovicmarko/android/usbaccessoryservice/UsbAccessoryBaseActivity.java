@@ -19,6 +19,7 @@ public abstract class UsbAccessoryBaseActivity extends Activity {
     private static final String TAG = "UsbAccessoryBaseActivity";
 
     private UsbAccessoryService mService;
+    private OBC obc;
     private boolean mBound = false;
 
     @Override
@@ -58,6 +59,7 @@ public abstract class UsbAccessoryBaseActivity extends Activity {
     private void unbindFromService() {
         if (mBound) {
             unbindService(mConnection);
+            obc = null;
             mBound = false;
         }
     }
@@ -84,17 +86,35 @@ public abstract class UsbAccessoryBaseActivity extends Activity {
         public void onServiceConnected(ComponentName componentName, IBinder iBinder) {
             // We've bound to LocalService, cast the IBinder and get LocalService instance
             LocalBinder binder = (LocalBinder) iBinder;
-            mService = binder.getService();
+            obc = mService = binder.getService();
             mBound = true;
         }
 
         @Override
         public void onServiceDisconnected(ComponentName componentName) {
+            obc = null;
             mBound = false;
         }
     };
 
+    /**
+     * USBAccessoryService implements OBC.
+     * <p/>
+     * Only the OBC public methods are exposed to activities extending this class.
+     * Activities are unaware that they communicate with USBAccessoryService.
+     *
+     * @return
+     */
     public OBC getOBC() {
-        return mService;
+        return obc;
+    }
+
+    /**
+     * Tests can use this method to inject OBC mock.
+     *
+     * @param obc
+     */
+    public void setOBC(OBC obc) {
+        this.obc = obc;
     }
 }
