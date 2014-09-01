@@ -9,6 +9,7 @@ import android.hardware.usb.UsbAccessory;
 import android.hardware.usb.UsbManager;
 import android.os.Bundle;
 import android.support.v4.content.LocalBroadcastManager;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 
@@ -89,8 +90,12 @@ public class UsbAccessoryActivity extends Activity {
 
     @Override
     protected void onDestroy() {
-        unregisterReceiver(mMessageReceiver);
         super.onDestroy();
+        try {
+            unregisterReceiver(mMessageReceiver);
+        } catch (IllegalArgumentException e) {
+            Log.e(TAG, e.getMessage());
+        }
     }
 
     public boolean onCreateOptionsMenu(Menu menu) {

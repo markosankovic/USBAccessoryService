@@ -14,7 +14,7 @@ import android.util.Log;
 
 import com.sankovicmarko.android.usbaccessoryservice.UsbAccessoryService.LocalBinder;
 
-public class UsbAccessoryBaseActivity extends Activity {
+public abstract class UsbAccessoryBaseActivity extends Activity {
 
     private static final String TAG = "UsbAccessoryBaseActivity";
 
